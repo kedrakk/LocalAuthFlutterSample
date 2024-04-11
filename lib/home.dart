@@ -1,8 +1,10 @@
-import 'dart:developer';
-import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:auth0_flutter/auth0_flutter_web.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:local_auth/local_auth.dart';
+import 'data/const.dart';
+import 'hero.dart';
+import 'user.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -14,68 +16,92 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String errorMessage = "";
-  bool canUseBiometrics = false;
-  final LocalAuthentication auth = LocalAuthentication();
+  UserProfile? _user;
 
-  _checkIsSupported() async {
-    final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
-    if (!canAuthenticateWithBiometrics) {
-      errorMessage = "Cannot authenticate with Biometrics";
-    }
-    final bool isDeviceSupported = await auth.isDeviceSupported();
-    if (!isDeviceSupported) {
-      errorMessage = "This device is supported for biometrics";
-    }
-    canUseBiometrics = canAuthenticateWithBiometrics || isDeviceSupported;
-    setState(() {});
-  }
+  late Auth0 auth0;
+  late Auth0Web auth0Web;
 
   @override
   void initState() {
-    _checkIsSupported();
     super.initState();
+    auth0 = Auth0(auth0Domain, auth0ClientId);
+    auth0Web = Auth0Web(auth0Domain, auth0ClientId);
+
+    if (kIsWeb) {
+      auth0Web.onLoad().then((final credentials) => setState(() {
+            _user = credentials?.user;
+          }));
+    }
+  }
+
+  Future<void> login() async {
+    try {
+      if (kIsWeb) {
+        return auth0Web.loginWithRedirect(redirectUrl: 'http://localhost:3000');
+      }
+
+      var credentials = await auth0.webAuthentication().login();
+
+      setState(() {
+        _user = credentials.user;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      if (kIsWeb) {
+        await auth0Web.logout(returnToUrl: 'http://localhost:3000');
+      } else {
+        await auth0.webAuthentication().logout();
+        setState(() {
+          _user = null;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: canUseBiometrics
-            ? ElevatedButton(
-                onPressed: () {
-                  _authenticate();
-                },
-                child: const Text("Authenticate with biometrics"),
-              )
-            : Text(errorMessage),
-      ),
-    );
-  }
-
-  _authenticate() async {
-    try {
-      final bool didAuthenticate = await auth.authenticate(
-        localizedReason: 'Please authenticate to continue',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
+  Widget build(final BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+          body: Padding(
+        padding: const EdgeInsets.only(
+          top: padding,
+          bottom: padding,
+          left: padding / 2,
+          right: padding / 2,
         ),
-      );
-      if (didAuthenticate) {
-        log("Success");
-      }
-    } on PlatformException catch (e) {
-      if (e.code == auth_error.notAvailable) {
-        log("Not available");
-      } else if (e.code == auth_error.notEnrolled) {
-        log("Not enrolled");
-      } else {
-        log(e.message.toString());
-      }
-    }
+        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          Expanded(
+              child: Row(children: [
+            _user != null
+                ? Expanded(child: UserWidget(user: _user))
+                : const Expanded(child: HeroWidget())
+          ])),
+          _user != null
+              ? ElevatedButton(
+                  onPressed: logout,
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.black),
+                  ),
+                  child: const Text('Logout'),
+                )
+              : ElevatedButton(
+                  onPressed: login,
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.black),
+                  ),
+                  child: const Text('Login'),
+                )
+        ]),
+      )),
+    );
   }
 }
