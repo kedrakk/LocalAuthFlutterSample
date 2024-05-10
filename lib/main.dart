@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:local_auth_example/home.dart';
+import 'package:local_auth_example/home_new.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomeNewPage(title: 'Flutter Demo Home Page'),
     );
   }
 }

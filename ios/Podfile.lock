@@ -1,22 +1,28 @@
 PODS:
+  - biometric_signature (2.0.0):
+    - Flutter
   - Flutter (1.0.0)
   - local_auth_ios (0.0.1):
     - Flutter
 
 DEPENDENCIES:
+  - biometric_signature (from `.symlinks/plugins/biometric_signature/ios`)
   - Flutter (from `Flutter`)
   - local_auth_ios (from `.symlinks/plugins/local_auth_ios/ios`)
 
 EXTERNAL SOURCES:
+  biometric_signature:
+    :path: ".symlinks/plugins/biometric_signature/ios"
   Flutter:
     :path: Flutter
   local_auth_ios:
     :path: ".symlinks/plugins/local_auth_ios/ios"
 
 SPEC CHECKSUMS:
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  biometric_signature: 06b9615f1d192f08cfe7db5aa016beccb6217c12
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   local_auth_ios: c6cf091ded637a88f24f86a8875d8b0f526e2605
 
-PODFILE CHECKSUM: 70d9d25280d0dd177a5f637cdb0f0b0b12c6a189
+PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
 
 COCOAPODS: 1.13.0
