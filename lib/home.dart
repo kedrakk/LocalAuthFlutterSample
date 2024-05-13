@@ -40,7 +40,11 @@ class _MyHomePageState extends State<MyHomePage> {
         return auth0Web.loginWithRedirect(redirectUrl: 'http://localhost:3000');
       }
 
-      var credentials = await auth0.webAuthentication().login();
+      var credentials = await auth0
+          .webAuthentication(
+            scheme: scheme,
+          )
+          .login();
 
       setState(() {
         _user = credentials.user;
@@ -55,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (kIsWeb) {
         await auth0Web.logout(returnToUrl: 'http://localhost:3000');
       } else {
-        await auth0.webAuthentication().logout();
+        await auth0.webAuthentication(scheme: scheme).logout();
         setState(() {
           _user = null;
         });
