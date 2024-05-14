@@ -1,6 +1,4 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:auth0_flutter/auth0_flutter_web.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'data/const.dart';
 import 'hero.dart';
@@ -19,27 +17,15 @@ class _MyHomePageState extends State<MyHomePage> {
   UserProfile? _user;
 
   late Auth0 auth0;
-  late Auth0Web auth0Web;
 
   @override
   void initState() {
     super.initState();
     auth0 = Auth0(auth0Domain, auth0ClientId);
-    auth0Web = Auth0Web(auth0Domain, auth0ClientId);
-
-    if (kIsWeb) {
-      auth0Web.onLoad().then((final credentials) => setState(() {
-            _user = credentials?.user;
-          }));
-    }
   }
 
   Future<void> login() async {
     try {
-      if (kIsWeb) {
-        return auth0Web.loginWithRedirect(redirectUrl: 'http://localhost:3000');
-      }
-
       var credentials = await auth0
           .webAuthentication(
             scheme: scheme,
@@ -56,14 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> logout() async {
     try {
-      if (kIsWeb) {
-        await auth0Web.logout(returnToUrl: 'http://localhost:3000');
-      } else {
-        await auth0.webAuthentication(scheme: scheme).logout();
-        setState(() {
-          _user = null;
-        });
-      }
+      await auth0.webAuthentication(scheme: scheme).logout();
+      setState(() {
+        _user = null;
+      });
     } catch (e) {
       print(e);
     }
